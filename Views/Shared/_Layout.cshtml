@@ -22,6 +22,16 @@
                     <li>@Html.ActionLink("Ordini", "Index", "Ordini", new { area = "" }, new { @class = "nav-link" })</li>
                     <li>@Html.ActionLink("API", "Index", "Help", new { area = "" }, new { @class = "nav-link" })</li>
                 </ul>
+                <ul class="text-white">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <li>@Html.ActionLink("Logout", "Logout", "Auth", new { area = "" }, new { @class = "btn btn-danger" })</li>
+                    }
+                    else
+                    {
+                        <li>@Html.ActionLink("Login", "Login", "Auth", new { area = "" }, new { @class = "btn btn-success" })</li>
+                    }
+                </ul>
             </div>
         </div>
     </nav>
