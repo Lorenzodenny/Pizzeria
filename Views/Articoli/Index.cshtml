@@ -55,6 +55,10 @@
                 </td>
 
             }
+            @if (User.IsInRole("Cliente"))
+            {
+                @Html.ActionLink("AddToCart", "OrdArts", null ,new { id = item.Articolo_ID })
+            }
 
             <td>
                 @Html.ActionLink("Details", "Details", new { id = item.Articolo_ID })

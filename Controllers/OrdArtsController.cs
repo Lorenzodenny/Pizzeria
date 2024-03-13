@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
+using Newtonsoft.Json;
 using Pizzeria.Models;
 
 namespace Pizzeria.Controllers
@@ -96,42 +97,35 @@ namespace Pizzeria.Controllers
             return View(ordArt);
         }
 
-        // GET: OrdArts/Edit/5
-        [Authorize(Roles = "Cliente,Amministratore")]
-        public ActionResult Edit(int? id)
+        // Crea Cookie Carrello
+
+        [HttpPost]
+        public ActionResult AddToCart(int? id)
         {
+            List<Articoli> artCart;
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            OrdArt ordArt = db.OrdArt.Find(id);
-            if (ordArt == null)
+            var articolo = db.Articoli.FirstOrDefault(o => o.Articolo_ID == id);
+            if (Request.Cookies["Carrello"] != null)
             {
-                return HttpNotFound();
+                var cartJson = HttpUtility.UrlDecode(Request.Cookies["Carrello"].Value);
+                artCart = JsonConvert.DeserializeObject<List<Articoli>>(cartJson);
+
             }
-            ViewBag.Articolo_ID = new SelectList(db.Articoli, "Articolo_ID", "Nome", ordArt.Articolo_ID);
-            ViewBag.Ordine_ID = new SelectList(db.Ordini, "Ordine_ID", "Indirizzo", ordArt.Ordine_ID);
-            return View(ordArt);
+            artCart = new List<Articoli>
+            {
+                articolo
+            };
+
+            var jsonCart = JsonConvert.SerializeObject(artCart);
+            var cartCookie = new HttpCookie("Carrello",HttpUtility.UrlEncode(jsonCart));
+
+
+            return View();
         }
 
-        // POST: OrdArts/Edit/5
-        // Per la protezione da attacchi di overposting, abilitare le proprietà a cui eseguire il binding. 
-        // Per altri dettagli, vedere https://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Cliente,Amministratore")]
-        public ActionResult Edit([Bind(Include = "Articolo_ID,Ordine_ID,Quantita")] OrdArt ordArt)
-        {
-            if (ModelState.IsValid)
-            {
-                db.Entry(ordArt).State = EntityState.Modified;
-                db.SaveChanges();
-                return RedirectToAction("Index");
-            }
-            ViewBag.Articolo_ID = new SelectList(db.Articoli, "Articolo_ID", "Nome", ordArt.Articolo_ID);
-            ViewBag.Ordine_ID = new SelectList(db.Ordini, "Ordine_ID", "Indirizzo", ordArt.Ordine_ID);
-            return View(ordArt);
-        }
 
         // GET: OrdArts/Delete/5
         [Authorize(Roles = "Cliente,Amministratore")]

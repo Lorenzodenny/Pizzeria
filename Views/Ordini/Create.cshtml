@@ -1,64 +1,166 @@
-﻿@model Pizzeria.Models.Ordini
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.Entity;
+using System.Linq;
+using System.Net;
+using System.Web;
+using System.Web.Mvc;
+using System.Web.Security;
+using Pizzeria.Models;
 
-@{
-    ViewBag.Title = "Create";
-}
-
-<h2>Create</h2>
-
-
-@using (Html.BeginForm()) 
+namespace Pizzeria.Controllers
 {
-    @Html.AntiForgeryToken()
-    
-    <div class="form-horizontal">
-        <h4>Ordini</h4>
-        <hr />
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        <div class="form-group">
-            @Html.LabelFor(model => model.Indirizzo, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Indirizzo, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Indirizzo, "", new { @class = "text-danger" })
-            </div>
-        </div>
+    public class OrdiniController : Controller
+    {
+        private DBContext db = new DBContext();
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.Note, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Note, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Note, "", new { @class = "text-danger" })
-            </div>
-        </div>
+        // GET: Ordini
+        [Authorize(Roles = "Amministratore")]
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.CostoCons, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.CostoCons, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.CostoCons, "", new { @class = "text-danger" })
-            </div>
-        </div>
+        public ActionResult Index()
+        {
+            var ordini = db.Ordini.Include(o => o.Users);
+            return View(ordini.ToList());
+        }
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.User_ID, "User_ID", htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.DropDownList("User_ID", null, htmlAttributes: new { @class = "form-control" })
-                @Html.ValidationMessageFor(model => model.User_ID, "", new { @class = "text-danger" })
-            </div>
-        </div>
+        // GET: Ordini/Details/5
+        [Authorize(Roles = "Cliente,Amministratore")]
+        public ActionResult Details(int? id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            var idInt = Convert.ToInt32(id);
+            var order = db.Ordini
+                .Where(o => o.User_ID == idInt).ToList();
+            if (order == null)
+            {
+                return HttpNotFound();
+            }
+            return View(order);
+        }
 
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Create" class="btn btn-default" />
-            </div>
-        </div>
-    </div>
-}
+        // GET: Ordini/Create
+        [Authorize(Roles = "Cliente,Amministratore")]
+        public ActionResult Create()
+        {
+            if (User.IsInRole("Cliente"))
+            {
+                ViewBag.User_ID = User.Identity.Name;
+            }else if (User.IsInRole("Amministratore"))
+            {
+                ViewBag.User_ID = new SelectList(db.Users, "User_ID", "Nome");
+            }
 
-<div>
-    @Html.ActionLink("Back to List", "Index")
-</div>
 
-@section Scripts {
-    @Scripts.Render("~/bundles/jqueryval")
+            ViewBag.Articolo_ID = new SelectList(db.Articoli, "Articolo_ID", "Nome");
+            ViewBag.Ordine_ID = new SelectList(db.Ordini, "Ordine_ID", "Indirizzo");
+
+            return View();
+        }
+
+        // POST: Ordini/Create
+        // Per la protezione da attacchi di overposting, abilitare le proprietà a cui eseguire il binding.
+        // Per altri dettagli, vedere https://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Create(OrdArt ordArt)
+        {
+            if (ModelState.IsValid)
+            {
+                // Salva l'ordine nella tabella Ordini
+                db.Ordini.Add(ordArt.Ordini);
+                db.SaveChanges();
+
+                // Ottieni l'Ordine_ID appena creato
+                int newOrdineID = ordArt.Ordini.Ordine_ID;
+
+                // Assegna l'Ordine_ID appena creato al record della tabella OrdArt
+                ordArt.Ordine_ID = newOrdineID;
+
+                // Aggiungi il record della tabella OrdArt
+                db.OrdArt.Add(ordArt);
+                db.SaveChanges();
+
+                return RedirectToAction("Index","Articoli");
+            }
+
+            return View(ordArt);
+        }
+
+        // GET: Ordini/Edit/5
+        [Authorize(Roles = "Amministratore")]
+        public ActionResult Edit(int? id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            Ordini ordini = db.Ordini.Find(id);
+            if (ordini == null)
+            {
+                return HttpNotFound();
+            }
+            ViewBag.User_ID = new SelectList(db.Users, "User_ID", "Nome", ordini.User_ID);
+            return View(ordini);
+        }
+
+        // POST: Ordini/Edit/5
+        // Per la protezione da attacchi di overposting, abilitare le proprietà a cui eseguire il binding.
+        // Per altri dettagli, vedere https://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Amministratore")]
+
+        public ActionResult Edit([Bind(Include = "Ordine_ID,Indirizzo,Note,CostoCons,User_ID")] Ordini ordini)
+        {
+            if (ModelState.IsValid)
+            {
+                db.Entry(ordini).State = EntityState.Modified;
+                db.SaveChanges();
+                return RedirectToAction("Index");
+            }
+            ViewBag.User_ID = new SelectList(db.Users, "User_ID", "Nome", ordini.User_ID);
+            return View(ordini);
+        }
+
+        // GET: Ordini/Delete/5
+        [Authorize(Roles = "Amministratore")]
+        public ActionResult Delete(int? id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            Ordini ordini = db.Ordini.Find(id);
+            if (ordini == null)
+            {
+                return HttpNotFound();
+            }
+            return View(ordini);
+        }
+
+        // POST: Ordini/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Amministratore")]
+        [ValidateAntiForgeryToken]
+        public ActionResult DeleteConfirmed(int id)
+        {
+            Ordini ordini = db.Ordini.Find(id);
+            db.Ordini.Remove(ordini);
+            db.SaveChanges();
+            return RedirectToAction("Index");
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
 }
