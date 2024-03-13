@@ -2,14 +2,22 @@
 
 @{
     ViewBag.Title = "Create";
+    var message = TempData["message"] as string;
 }
 
 <h2>Create</h2>
 
-@using (Html.BeginForm()) 
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert alert-danger">
+        @message
+    </div>
+}
+
+@using (Html.BeginForm())
 {
     @Html.AntiForgeryToken()
-    
+
     <div class="form-horizontal">
         <h4>Users</h4>
         <hr />

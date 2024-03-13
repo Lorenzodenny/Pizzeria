@@ -52,7 +52,10 @@
 
     </dl>
 </div>
+@if (User.IsInRole("Amministratore"))
+{
+   <p>@Html.ActionLink("Edit", "Edit", new { id = Model.Articolo_ID })</p> 
+}
 <p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.Articolo_ID }) |
     @Html.ActionLink("Back to List", "Index")
 </p>
