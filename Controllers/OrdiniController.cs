@@ -20,7 +20,7 @@ namespace Pizzeria.Controllers
         {
             //return View(db.Ordini.Include("Users").ToList());
 
-            var ordini = db.Ordini.Include(o => o.Users);
+            var ordini = db.Ordini.Include(o => o.Users).OrderByDescending(o => o.Ordine_ID);
             return View(ordini.ToList());
         }
 
@@ -94,6 +94,7 @@ namespace Pizzeria.Controllers
             return View(ordArt);
         }
 
+      
         // GET: Ordini/Edit/5
         [Authorize(Roles = "Amministratore")]
         public ActionResult Edit(int? id)
@@ -114,10 +115,12 @@ namespace Pizzeria.Controllers
         // POST: Ordini/Edit/5
         // Per la protezione da attacchi di overposting, abilitare le proprietà a cui eseguire il binding. 
         // Per altri dettagli, vedere https://go.microsoft.com/fwlink/?LinkId=317598.
+
         [HttpPost]
-        [Authorize(Roles = "Amministratore")]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Ordine_ID,Indirizzo,Note,CostoCons,User_ID")] Ordini ordini)
+        [Authorize(Roles = "Amministratore")]
+
+        public ActionResult Edit([Bind(Include = "Ordine_ID,Indirizzo,Note,Data,Stato,Totale,CostoCons,User_ID")] Ordini ordini)
         {
             if (ModelState.IsValid)
             {
@@ -125,7 +128,6 @@ namespace Pizzeria.Controllers
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
-            ViewBag.User_ID = new SelectList(db.Users, "User_ID", "Nome", ordini.User_ID);
             return View(ordini);
         }
 
@@ -151,9 +153,21 @@ namespace Pizzeria.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            Ordini ordini = db.Ordini.Find(id);
-            db.Ordini.Remove(ordini);
+            Ordini ordine = db.Ordini.Find(id);
+
+            // Trova e rimuovi tutte le voci correlate nella tabella OrdArt
+            var ordArtCorrelati = db.OrdArt.Where(oa => oa.Ordine_ID == id);
+            foreach (var ordArt in ordArtCorrelati)
+            {
+                db.OrdArt.Remove(ordArt);
+            }
+
+            // Rimuovi l'ordine dalla tabella Ordini
+            db.Ordini.Remove(ordine);
+
+            // Salva le modifiche
             db.SaveChanges();
+
             return RedirectToAction("Index");
         }
 

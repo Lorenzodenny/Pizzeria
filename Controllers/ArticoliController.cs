@@ -111,13 +111,25 @@ namespace Pizzeria.Controllers
 
         // POST: Articoli/Delete/5
         [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
         [Authorize(Roles = "Amministratore")]
+        [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            Articoli articoli = db.Articoli.Find(id);
-            db.Articoli.Remove(articoli);
+            Articoli articolo = db.Articoli.Find(id);
+
+            // Trova e rimuovi tutte le voci correlate nella tabella OrdArt
+            var ordArtCorrelati = db.OrdArt.Where(oa => oa.Articolo_ID == id);
+            foreach (var ordArt in ordArtCorrelati)
+            {
+                db.OrdArt.Remove(ordArt);
+            }
+
+            // Rimuovi l'ordine dalla tabella Ordini
+            db.Articoli.Remove(articolo);
+
+            // Salva le modifiche
             db.SaveChanges();
+
             return RedirectToAction("Index");
         }
 

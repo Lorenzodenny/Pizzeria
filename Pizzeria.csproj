@@ -163,6 +163,7 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\SampleDirection.cs" />
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
+    <Compile Include="Controllers\AdminController.cs" />
     <Compile Include="Controllers\ArticoliController.cs" />
     <Compile Include="Controllers\AuthController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
@@ -173,6 +174,12 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202403142307452_Initial-Create.cs" />
+    <Compile Include="Migrations\202403142307452_Initial-Create.designer.cs">
+      <DependentUpon>202403142307452_Initial-Create.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Models\ArtCart.cs" />
     <Compile Include="Models\Articoli.cs" />
     <Compile Include="Models\DBContext.cs" />
     <Compile Include="Models\OrdArt.cs" />
@@ -266,6 +273,9 @@
     <Content Include="Views\OrdArts\Delete.cshtml" />
     <Content Include="Views\OrdArts\Details.cshtml" />
     <Content Include="Views\OrdArts\Index.cshtml" />
+    <Content Include="Views\OrdArts\Cart.cshtml" />
+    <Content Include="Views\Admin\TotaleIncassato.cshtml" />
+    <Content Include="Views\Admin\OrdiniEvasi.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -340,6 +350,11 @@
     <None Include="packages.config" />
     <Content Include="Scripts\jquery-3.4.1.slim.min.map" />
     <Content Include="Scripts\jquery-3.4.1.min.map" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\202403142307452_Initial-Create.resx">
+      <DependentUpon>202403142307452_Initial-Create.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

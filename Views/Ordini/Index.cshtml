@@ -4,13 +4,9 @@
     ViewBag.Title = "Index";
 }
 
-<h2>Index</h2>
+<h2>Ordini</h2>
 
-<p>
-    @Html.ActionLink("Create New", "Create", null, new { @class = "btn btn-info" })
-
-</p>
-<table class="table">
+<table class="table table-hover table-responsive-md table-secondary">
     <tr>
         <th>
             @Html.DisplayNameFor(model => model.Users.Nome)
@@ -22,11 +18,12 @@
             @Html.DisplayNameFor(model => model.Indirizzo)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Note)
+            @Html.DisplayNameFor(model => model.Stato)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.CostoCons)
+            @Html.DisplayNameFor(model => model.Note)
         </th>
+
         <th></th>
     </tr>
 
@@ -42,15 +39,17 @@
             @Html.DisplayFor(modelItem => item.Indirizzo)
         </td>
         <td>
+            @Html.DisplayFor(modelItem => item.Stato)
+        </td>
+        <td>
             @Html.DisplayFor(modelItem => item.Note)
         </td>
+
         <td>
-            @Html.DisplayFor(modelItem => item.CostoCons)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id = item.Ordine_ID }) |
-            <a href="/OrdArts/Details/@item.Ordine_ID">Details</a>
-            @Html.ActionLink("Delete", "Delete", new { id = item.Ordine_ID })
+            @Html.ActionLink("Edit", "Edit", new { id = item.Ordine_ID }, new { @class = "btn btn-success" })
+
+            <a class="btn btn-primary" href="/OrdArts/Details/@item.Ordine_ID">Details</a>
+            @Html.ActionLink("Delete", "Delete", new { id = item.Ordine_ID }, new { @class = "btn btn-danger" })
         </td>
     </tr>
 }
